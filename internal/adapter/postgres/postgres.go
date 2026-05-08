@@ -41,17 +41,58 @@ func New(ctx context.Context, c Config) (*Pool, error) {
 }
 
 func (p *Pool) CreateTask(ctx context.Context, task domain.Task) (int, error) {
-	id := 1
+	sql := `
+	INSERT INTO tasks(desc, creator_name)
+	VALUES($1, $2)
+	RETURNING id
+	`
+
+	var id int
+
+	err := p.pool.QueryRow(ctx, sql, task.Desc, task.CreatorName).Scan(&id)
+	if err != nil {
+		return id, fmt.Errorf("unable to query db: %w", err)
+	}
+
 	return id, nil
 }
 
-func (p *Pool) GetTask(ctx context.Context, id int) (domain.Task, error) {
-	var task domain.Task
+func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
+	sql := `SELECT * FROM tasks WHERE id = $1`
+
+	task := domain.Task{ID: id}
+
+	err := p.pool.QueryRow(ctx, sql, id).
+		Scan(
+			task.Desc,
+			task.CreatedAt,
+			task.UpdatedAt,
+			task.CreatorName)
+	if err != nil {
+		return task, fmt.Errorf("unable to read the task: %w", err)
+	}
 
 	return task, nil
 }
 
 func (p *Pool) DeleteTask(ctx context.Context, id int) error {
+	sql := `DELETE * FROM tasks WHERE id = $1`
+
+	tag, err := p.pool.Exec(ctx, sql, id)
+	if err != nil {
+		return fmt.Errorf("unable to delete task: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
+	}
+
+	return nil
+}
+
+// TODO: Подумать, как понять, какие поля изменились. Нужно ли передавать id?
+
+func (p *Pool) UpdateTask(ctx context.Context, id int, taskDiff domain.Task) error {
 	return nil
 }
 
