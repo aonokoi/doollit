@@ -8,10 +8,10 @@ import (
 	"proj/doollit/pkg/render"
 )
 
-func (h *Handlers) CreateTask(w http.ResponseWriter, r *http.Request) {
-	const op = "http.CreateTask"
+func (h *Handlers) ReadTask(w http.ResponseWriter, r *http.Request) {
+	const op = "http.ReadTask"
 
-	input := dto.CreateTaskInput{}
+	var input dto.ReadTaskInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
@@ -20,7 +20,7 @@ func (h *Handlers) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := h.taskService.CreateTask(r.Context(), input)
+	output, err := h.taskService.ReadTask(r.Context(), input)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
