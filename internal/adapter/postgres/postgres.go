@@ -60,10 +60,11 @@ func (p *Pool) CreateTask(ctx context.Context, task domain.Task) (int, error) {
 func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
 	sql := `SELECT * FROM tasks WHERE id = $1`
 
-	task := domain.Task{ID: id}
+	var task domain.Task
 
 	err := p.pool.QueryRow(ctx, sql, id).
 		Scan(
+			task.ID,
 			task.Desc,
 			task.CreatedAt,
 			task.UpdatedAt,
@@ -75,19 +76,19 @@ func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
 	return task, nil
 }
 
-func (p *Pool) DeleteTask(ctx context.Context, id int) error {
+func (p *Pool) DeleteTask(ctx context.Context, id int) (int, error) {
 	sql := `DELETE * FROM tasks WHERE id = $1`
 
 	tag, err := p.pool.Exec(ctx, sql, id)
 	if err != nil {
-		return fmt.Errorf("unable to delete task: %w", err)
+		return 0, fmt.Errorf("unable to delete task: %w", err)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
+		return 0, fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
 	}
 
-	return nil
+	return id, nil
 }
 
 // TODO: Подумать, как понять, какие поля изменились. Нужно ли передавать id?
