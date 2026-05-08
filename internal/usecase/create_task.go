@@ -9,18 +9,21 @@ import (
 )
 
 func (s *STask) CreateTask(ctx context.Context, input dto.CreateTaskInput) (dto.CreatTaskOutput, error) {
+	const op = "usecase.CreateTask"
+
 	var output dto.CreatTaskOutput
 
 	task, err := domain.NewTask(input.Desc, input.CreatedName)
 	if err != nil {
-		return output, fmt.Errorf("new task: %w", err)
+		return output, fmt.Errorf("new task: %s: %w", err)
 	}
 
 	id, err := s.postgres.CreateTask(ctx, task)
 	if err != nil {
-		return output, fmt.Errorf("saving to db: %w", err)
+		return output, fmt.Errorf("saving to db: %s: %w", err)
 	}
 
-	output.ID = id
-	return output, nil
+	return dto.CreatTaskOutput{
+		ID: id,
+	}, nil
 }
