@@ -19,7 +19,7 @@ func Router(service *usecase.STask) http.Handler {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
-			r.Post("/task")
+			r.Post("/task", handlers.CreateTask)
 		})
 	})
 }
