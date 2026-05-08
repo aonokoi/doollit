@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"proj/doollit/internal/dto"
+	"proj/doollit/pkg/render"
 )
 
 func (h *Handlers) CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -23,4 +24,6 @@ func (h *Handlers) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	render.JSON(w, output, http.StatusOK)
 }
