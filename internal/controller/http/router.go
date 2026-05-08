@@ -22,4 +22,6 @@ func Router(service *usecase.STask) http.Handler {
 			r.Post("/task", handlers.CreateTask)
 		})
 	})
+
+	return r
 }
