@@ -9,9 +9,9 @@ import (
 
 type Postgres interface {
 	CreateTask(ctx context.Context, task domain.Task) (int, error)
-	GetTask(ctx context.Context, id int) (domain.Task, error)
+	ReadTask(ctx context.Context, id int) (domain.Task, error)
 	DeleteTask(ctx context.Context, id int) error
-	// UpdateTask(ctx context.Context, id int,)
+	UpdateTask(ctx context.Context, id int, taskDiff domain.Task) error
 }
 
 type STask struct {
