@@ -18,10 +18,6 @@ func (s *STask) ReadTask(ctx context.Context, input dto.ReadTaskInput) (dto.Read
 	}
 
 	return dto.ReadTaskOutput{
-		ID:          task.ID,
-		Desc:        task.Desc,
-		CreatedAt:   task.CreatedAt,
-		UpdatedAt:   task.UpdatedAt,
-		CreatorName: task.CreatorName,
+		Task: task,
 	}, nil
 }
