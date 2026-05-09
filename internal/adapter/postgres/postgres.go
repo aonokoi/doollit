@@ -76,19 +76,19 @@ func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
 	return task, nil
 }
 
-func (p *Pool) DeleteTask(ctx context.Context, id int) (int, error) {
+func (p *Pool) DeleteTask(ctx context.Context, id int) error {
 	sql := `DELETE * FROM tasks WHERE id = $1`
 
 	tag, err := p.pool.Exec(ctx, sql, id)
 	if err != nil {
-		return 0, fmt.Errorf("unable to delete task: %w", err)
+		return fmt.Errorf("unable to delete task: %w", err)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return 0, fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
+		return fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
 	}
 
-	return id, nil
+	return nil
 }
 
 // TODO: Подумать, как понять, какие поля изменились. Нужно ли передавать id?

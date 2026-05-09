@@ -14,10 +14,10 @@ func (s *STask) DeleteTask(
 
 	var output dto.DeleteTaskOutput
 
-	id, err := s.postgres.DeleteTask(ctx, input.ID)
+	err := s.postgres.DeleteTask(ctx, input.ID)
 	if err != nil {
 		return output, fmt.Errorf("unable to delete task: %s: %w", op, err)
 	}
 
-	return dto.DeleteTaskOutput{ID: id}, nil
+	return output, nil
 }

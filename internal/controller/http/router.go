@@ -21,6 +21,7 @@ func Router(service *usecase.STask) http.Handler {
 		r.Route("/v1", func(r chi.Router) {
 			r.Post("/task", handlers.CreateTask)
 			r.Get("/task/{id}", handlers.ReadTask)
+			r.Delete("/task/{id}", handlers.DeleteTask)
 		})
 	})
 
