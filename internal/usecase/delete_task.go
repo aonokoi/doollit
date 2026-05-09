@@ -7,9 +7,7 @@ import (
 	"proj/doollit/internal/dto"
 )
 
-func (s *STask) DeleteTask(
-	ctx context.Context, input dto.DeleteTaskInput,
-) (dto.DeleteTaskOutput, error) {
+func (s *STask) DeleteTask(ctx context.Context, input dto.DeleteTaskInput) (dto.DeleteTaskOutput, error) {
 	const op = "usecase.DeleteTask"
 
 	var output dto.DeleteTaskOutput

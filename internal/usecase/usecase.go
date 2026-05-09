@@ -11,7 +11,7 @@ type Postgres interface {
 	CreateTask(ctx context.Context, task domain.Task) (int, error)
 	ReadTask(ctx context.Context, id int) (domain.Task, error)
 	DeleteTask(ctx context.Context, id int) error
-	UpdateTask(ctx context.Context, id int, taskDiff domain.Task) error
+	UpdateTask(ctx context.Context, id int, desc domain.Description) error
 }
 
 type STask struct {
