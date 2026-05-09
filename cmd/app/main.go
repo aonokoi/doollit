@@ -9,7 +9,9 @@ import (
 
 	"proj/doollit/config"
 	"proj/doollit/internal/adapter/postgres"
+	"proj/doollit/internal/controller/http"
 	"proj/doollit/internal/usecase"
+	"proj/doollit/pkg/httpserver"
 )
 
 func main() {
@@ -19,27 +21,36 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println("config init successully")
+
 	// run app
 	err = AppRun(context.Background(), c)
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("app run successully")
 }
 
 func AppRun(ctx context.Context, c *config.Config) error {
 	// init postgres
 	pgPool, err := postgres.New(ctx, c.Postgres)
 	if err != nil {
-		return fmt.Errorf("Unable to init postgres: %w", err)
+		return fmt.Errorf("unable to init postgres: %w", err)
 	}
 
+	fmt.Println("postgres init successully")
+
 	// init usecase
-	TaskUseCase := usecase.NewSTask(pgPool)
-	_ = TaskUseCase
+	taskUseCase := usecase.NewSTask(pgPool)
 	// init router
+	router := http.Router(taskUseCase)
+	httpServer := httpserver.New(&router, c.HTTP)
 
-	// init httpserver
-
+	err = httpServer.Start()
+	if err != nil {
+		panic(err)
+	}
 	// Приложение запущено и готово к работе
 
 	sig := make(chan os.Signal, 1)
