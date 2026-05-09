@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"proj/doollit/internal/domain"
 
@@ -25,7 +26,7 @@ func New(ctx context.Context, c Config) (*Pool, error) {
 	const op = "postgres.New"
 
 	DBURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable&connect_timeout=5",
 		c.User, c.Password, c.Host, c.Port, c.DBName)
 
 	pool, err := pgxpool.New(ctx, DBURL)
@@ -41,8 +42,10 @@ func New(ctx context.Context, c Config) (*Pool, error) {
 }
 
 func (p *Pool) CreateTask(ctx context.Context, task domain.Task) (int, error) {
+	const op = "postgres.CreateTask"
+
 	sql := `
-	INSERT INTO tasks(desc, creator_name)
+	INSERT INTO tasks("desc", creator_name)
 	VALUES($1, $2)
 	RETURNING id
 	`
@@ -51,48 +54,70 @@ func (p *Pool) CreateTask(ctx context.Context, task domain.Task) (int, error) {
 
 	err := p.pool.QueryRow(ctx, sql, task.Desc, task.CreatorName).Scan(&id)
 	if err != nil {
-		return id, fmt.Errorf("unable to query db: %w", err)
+		return id, fmt.Errorf("unable to query db: %s: %w", op, err)
 	}
 
 	return id, nil
 }
 
 func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
+	const op = "postgres.ReadTask"
+
 	sql := `SELECT * FROM tasks WHERE id = $1`
 
-	task := domain.Task{ID: id}
+	var task domain.Task
 
 	err := p.pool.QueryRow(ctx, sql, id).
 		Scan(
-			task.Desc,
-			task.CreatedAt,
-			task.UpdatedAt,
-			task.CreatorName)
+			&task.ID,
+			&task.Desc,
+			&task.CreatedAt,
+			&task.UpdatedAt,
+			&task.CreatorName)
 	if err != nil {
-		return task, fmt.Errorf("unable to read the task: %w", err)
+		return task, fmt.Errorf("unable to read the task: %s: %w", op, err)
 	}
 
 	return task, nil
 }
 
 func (p *Pool) DeleteTask(ctx context.Context, id int) error {
+	const op = "postgres.DeleteTask"
+
 	sql := `DELETE * FROM tasks WHERE id = $1`
 
 	tag, err := p.pool.Exec(ctx, sql, id)
 	if err != nil {
-		return fmt.Errorf("unable to delete task: %w", err)
+		return fmt.Errorf("unable to delete task: %s: %w", op, err)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return fmt.Errorf("task is not found: tag: %v", tag.RowsAffected())
+		return fmt.Errorf("task is not found: tag: %s: %d", op, tag.RowsAffected())
 	}
 
 	return nil
 }
 
-// TODO: Подумать, как понять, какие поля изменились. Нужно ли передавать id?
+func (p *Pool) UpdateTask(ctx context.Context, id int, desc domain.Description) error {
+	const op = "postgres.UpdateTask"
+	now := time.Now()
 
-func (p *Pool) UpdateTask(ctx context.Context, id int, taskDiff domain.Task) error {
+	sql := `
+	UPDATE tasks
+	SET "desc" = $2,
+		updated_at = $3
+	WHERE id = $1
+	`
+
+	tag, err := p.pool.Exec(ctx, sql, id, desc, now)
+	if err != nil {
+		return fmt.Errorf("unable to update the task: %s: %w", op, err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("task in not found: tag: %s: %d", op, err)
+	}
+
 	return nil
 }
 

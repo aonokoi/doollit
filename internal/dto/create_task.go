@@ -6,5 +6,5 @@ type CreatTaskOutput struct {
 
 type CreateTaskInput struct {
 	Desc        string `json:"desc"`
-	CreatedName string `json:"created_name"`
+	CreatorName string `json:"creator_name"`
 }

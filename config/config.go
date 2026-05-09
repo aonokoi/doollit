@@ -5,12 +5,14 @@ import (
 	"os"
 
 	"proj/doollit/internal/adapter/postgres"
+	"proj/doollit/pkg/httpserver"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
 	Postgres postgres.Config
+	HTTP     httpserver.Config
 }
 
 func InitConfig() (*Config, error) {
