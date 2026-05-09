@@ -26,7 +26,7 @@ func New(ctx context.Context, c Config) (*Pool, error) {
 	const op = "postgres.New"
 
 	DBURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable&connect_timeout=5",
 		c.User, c.Password, c.Host, c.Port, c.DBName)
 
 	pool, err := pgxpool.New(ctx, DBURL)
@@ -45,7 +45,7 @@ func (p *Pool) CreateTask(ctx context.Context, task domain.Task) (int, error) {
 	const op = "postgres.CreateTask"
 
 	sql := `
-	INSERT INTO tasks(desc, creator_name)
+	INSERT INTO tasks("desc", creator_name)
 	VALUES($1, $2)
 	RETURNING id
 	`
@@ -69,11 +69,11 @@ func (p *Pool) ReadTask(ctx context.Context, id int) (domain.Task, error) {
 
 	err := p.pool.QueryRow(ctx, sql, id).
 		Scan(
-			task.ID,
-			task.Desc,
-			task.CreatedAt,
-			task.UpdatedAt,
-			task.CreatorName)
+			&task.ID,
+			&task.Desc,
+			&task.CreatedAt,
+			&task.UpdatedAt,
+			&task.CreatorName)
 	if err != nil {
 		return task, fmt.Errorf("unable to read the task: %s: %w", op, err)
 	}
@@ -103,9 +103,9 @@ func (p *Pool) UpdateTask(ctx context.Context, id int, desc domain.Description) 
 	now := time.Now()
 
 	sql := `
-	UPDATE tasks 
-	SET desc = $2
-	SET updated_at = $3
+	UPDATE tasks
+	SET "desc" = $2,
+		updated_at = $3
 	WHERE id = $1
 	`
 
