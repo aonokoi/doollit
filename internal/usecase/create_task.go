@@ -13,14 +13,14 @@ func (s *STask) CreateTask(ctx context.Context, input dto.CreateTaskInput) (dto.
 
 	var output dto.CreatTaskOutput
 
-	task, err := domain.NewTask(input.Desc, input.CreatedName)
+	task, err := domain.NewTask(input.Desc, input.CreatorName)
 	if err != nil {
-		return output, fmt.Errorf("new task: %s: %w", err)
+		return output, fmt.Errorf("new task: %s: %w", op, err)
 	}
 
 	id, err := s.postgres.CreateTask(ctx, task)
 	if err != nil {
-		return output, fmt.Errorf("saving to db: %s: %w", err)
+		return output, fmt.Errorf("saving to db: %s: %w", op, err)
 	}
 
 	return dto.CreatTaskOutput{
